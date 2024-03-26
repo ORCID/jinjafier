@@ -34,7 +34,7 @@ func main() {
         if strings.HasPrefix(line, "#") {
             jinjaTemplate += line + "\n"
         } else if strings.Contains(line, "=") {
-            split := strings.Split(line, "=")
+            split := strings.SplitN(line, "=", 2) // Split at the first "=" only
             key := split[0]
             value := split[1]
 

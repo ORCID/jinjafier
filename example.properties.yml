@@ -1,2 +1,3 @@
+ORG_WIBBLE_BROKER_URL: tcp://wibble:61616?jms.useAsyncSend=true
 ORG_WIBBLE_TEST_CAMEL_CAPS: "20"
 ORG_WIBBLE_TEST_LONG_PROPERTY: this is a long prop that is space separated to test whether wrapping occurs in the go yaml lib
