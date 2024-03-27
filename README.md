@@ -2,9 +2,11 @@
 
 ## Introduction
 
-Jinjafier is a small script to convert and existing java properties file to a jinja2 template with an included yml file with the current values of the property file.
+Jinjafier is a small script to convert and existing java properties file to a jinja2 template with an included yml file using the current values of the property file.
 
 ## Rules for converting property files
+
+The standards listed here are converted into jinja2 variables that are suitable to use as system environment variables (uppercase with _ as a delimiter.)
 
 |Property	| Note |
 |---------|------|
