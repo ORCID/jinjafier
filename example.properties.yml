@@ -1,4 +1,5 @@
 ORG_WIBBLE_BROKER_URL: tcp://wibble:61616?jms.useAsyncSend=true
+ORG_WIBBLE_CRON_FORMAT: '*/5 * * * * *'
 ORG_WIBBLE_MESSAGE_LISTENER_S3_ACCESS_KEY: blar
 ORG_WIBBLE_TEST_CAMEL_CAPS: "20"
 ORG_WIBBLE_TEST_LONG_PROPERTY: this is a long prop that is space separated to test whether wrapping occurs in the go yaml lib
