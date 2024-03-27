@@ -42,6 +42,7 @@ func main() {
             re := regexp.MustCompile("([a-z0-9])([A-Z])")
             key = re.ReplaceAllString(key, "${1}_${2}")
             key = strings.ReplaceAll(key, ".", "_")
+            key = strings.ReplaceAll(key, "-", "_")
             key = strings.ToUpper(key)
 
             // Add to jinja template
