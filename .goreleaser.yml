@@ -1,5 +1,7 @@
 builds:
   - env:
+    ldflags:
+      - -s -w -X main.version={{.Version}}
     goos:
       - darwin
       - windows

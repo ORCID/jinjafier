@@ -11,7 +11,15 @@ import (
     "gopkg.in/yaml.v3"
 )
 
+var version = "dev"
+
 func main() {
+
+		if os.Args[1] == "-v" {
+				fmt.Println("Jinjafier version:", version)
+				os.Exit(0)
+		}
+
     if len(os.Args) != 2 {
         fmt.Println("Usage: jinjafier <java_properties_file>")
         os.Exit(1)
