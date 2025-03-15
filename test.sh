@@ -7,13 +7,13 @@ go build -o jinjafier
 ./jinjafier example.properties
 
 # Check if example.properties.j2 and example.properties.yml have changed
-git diff --quiet -- example.properties.j2 example.properties.yml
+git diff --quiet -- example.properties.j2 example.properties.yml example.properties.env.j2
 
 # If git diff returns a non-zero exit code, the files have changed
 if [ $? -ne 0 ]; then
-    echo "FATAL: example.properties.j2 or example.properties.yml have changed"
+    echo "FATAL: example.properties.j2 or example.properties.yml or example.properties.env.j2 have changed"
     exit 1
 else
-    echo "No changes in example.properties.j2 or example.properties.yml"
+    echo "No changes in example.properties.j2 or example.properties.yml or example.properties.env.j2"
 fi
 
