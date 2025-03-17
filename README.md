@@ -16,3 +16,8 @@ The standards listed here are converted into jinja2 variables that are suitable 
 |MY\_MAINPROJECT\_PERSON\_FIRSTNAME     | Upper case format, which is recommended when using system environment variables.|
 
 
+# Installing with asdf
+```
+# RUN asdf plugin add jinjafier https://github.com/ORCID/asdf-jinjafier.git
+jinjafier latest
+
