@@ -44,6 +44,10 @@ func main() {
 			// Add comments to both templates
 			jinjaTemplate += line + "\n"
 			envTemplate += line + "\n"
+		} else if line == "" {
+			// Preserve blank lines in both templates
+			jinjaTemplate += "\n"
+			envTemplate += "\n"
 		} else if strings.Contains(line, "=") {
 			split := strings.SplitN(line, "=", 2) // Split at the first "=" only
 			key := split[0]
