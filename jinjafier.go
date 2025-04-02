@@ -14,18 +14,28 @@ import (
 var version = "dev"
 
 func main() {
-
 	if len(os.Args) == 2 && os.Args[1] == "-v" {
 		fmt.Println("Jinjafier version:", version)
 		os.Exit(0)
 	}
 
 	if len(os.Args) != 2 {
-		fmt.Println("Usage: jinjafier <java_properties_file>")
+		fmt.Println("Usage: jinjafier <file.properties|file.yml>")
 		os.Exit(1)
 	}
 
 	filename := os.Args[1]
+	if strings.HasSuffix(filename, ".properties") {
+		processPropertiesFile(filename)
+	} else if strings.HasSuffix(filename, ".yml") {
+		processYamlFile(filename)
+	} else {
+		fmt.Println("Unsupported file format. Please provide a .properties or .yml file.")
+		os.Exit(1)
+	}
+}
+
+func processPropertiesFile(filename string) {
 	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println(err)
@@ -53,7 +63,7 @@ func main() {
 			key := split[0]
 			value := split[1]
 
-			// Convert key to lowercase and replace dots and camel case with underscores
+			// Convert key to uppercase with underscores
 			re := regexp.MustCompile("([a-z0-9])([A-Z])")
 			key = re.ReplaceAllString(key, "${1}_${2}")
 			key = strings.ReplaceAll(key, ".", "_")
@@ -100,5 +110,44 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+}
+
+func processYamlFile(filename string) {
+	file, err := os.ReadFile(filename)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	var yamlData map[string]interface{}
+	err = yaml.Unmarshal(file, &yamlData)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	envTemplate := ""
+	flattenYaml("", yamlData, &envTemplate)
+
+	// Write env template to file
+	err = ioutil.WriteFile(strings.ReplaceAll(filename, ".yml", ".yml.env"), []byte(envTemplate), 0644)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func flattenYaml(prefix string, data map[string]interface{}, envTemplate *string) {
+	for key, value := range data {
+		// Convert key to uppercase with underscores
+		upperKey := strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(prefix+key, ".", "_"), "-", "_"))
+
+		switch v := value.(type) {
+		case map[string]interface{}:
+			flattenYaml(upperKey+"_", v, envTemplate)
+		default:
+			*envTemplate += fmt.Sprintf("%s=%v\n", upperKey, v)
+		}
 	}
 }
