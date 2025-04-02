@@ -141,7 +141,9 @@ func processYamlFile(filename string) {
 func flattenYaml(prefix string, data map[string]interface{}, envTemplate *string) {
 	for key, value := range data {
 		// Convert key to uppercase with underscores
-		upperKey := strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(prefix+key, ".", "_"), "-", "_"))
+		re := regexp.MustCompile("([a-z0-9])([A-Z])")
+		upperKey := re.ReplaceAllString(key, "${1}_${2}") // Add underscores before uppercase letters
+		upperKey = strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(prefix+upperKey, ".", "_"), "-", "_"))
 
 		switch v := value.(type) {
 		case map[string]interface{}:
