@@ -17,6 +17,41 @@ var version = "dev"
 func main() {
 	versionFlag := flag.Bool("v", false, "Print version")
 	camelSplit := flag.Bool("camel-split", false, "Split camelCase into separate words (e.g. brokerURL -> BROKER_URL)")
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `Jinjafier - Convert Java properties/YAML files to Jinja2 templates
+
+Converts property names to environment variable format suitable for Spring Boot:
+  - Replace '.' with '_'
+  - Replace '-' with '_'
+  - Convert to UPPERCASE
+  - By default, camelCase is NOT split (e.g. firstName -> FIRSTNAME)
+
+For .properties files, generates:
+  .properties.j2     - Jinja2 template with original keys and env var placeholders
+  .properties.env.j2 - Env var template (KEY={{ KEY }})
+  .properties.yml    - YAML file mapping env var names to original values
+
+For .yml files, generates:
+  .yml.env            - Flat env var file (KEY=value)
+
+Spring Boot binding:
+  @Value requires exact env var match (no camelCase splitting) - use default mode.
+  @ConfigurationProperties supports relaxed binding - both modes work.
+
+Usage:
+  jinjafier [flags] <file.properties|file.yml>
+
+Examples:
+  jinjafier app.properties                  # person.firstName -> PERSON_FIRSTNAME
+  jinjafier -camel-split app.properties     # person.firstName -> PERSON_FIRST_NAME
+  jinjafier config.yml                      # flatten YAML to env vars
+
+Flags:
+`)
+		flag.PrintDefaults()
+	}
+
 	flag.Parse()
 
 	if *versionFlag {
@@ -26,7 +61,7 @@ func main() {
 
 	args := flag.Args()
 	if len(args) != 1 {
-		fmt.Println("Usage: jinjafier [-camel-split] <file.properties|file.yml>")
+		flag.Usage()
 		os.Exit(1)
 	}
 
