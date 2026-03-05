@@ -11,8 +11,7 @@ org:
 
     # testing - in key
     message-listener:
-      s3:
-        accessKey: blar
+      retryCount: 3
 
     # testing weird cron
     cronFormat: "*/5 * * * * *"

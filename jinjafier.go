@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -14,28 +15,44 @@ import (
 var version = "dev"
 
 func main() {
-	if len(os.Args) == 2 && os.Args[1] == "-v" {
+	versionFlag := flag.Bool("v", false, "Print version")
+	camelSplit := flag.Bool("camel-split", false, "Split camelCase into separate words (e.g. brokerURL -> BROKER_URL)")
+	flag.Parse()
+
+	if *versionFlag {
 		fmt.Println("Jinjafier version:", version)
 		os.Exit(0)
 	}
 
-	if len(os.Args) != 2 {
-		fmt.Println("Usage: jinjafier <file.properties|file.yml>")
+	args := flag.Args()
+	if len(args) != 1 {
+		fmt.Println("Usage: jinjafier [-camel-split] <file.properties|file.yml>")
 		os.Exit(1)
 	}
 
-	filename := os.Args[1]
+	filename := args[0]
 	if strings.HasSuffix(filename, ".properties") {
-		processPropertiesFile(filename)
+		processPropertiesFile(filename, *camelSplit)
 	} else if strings.HasSuffix(filename, ".yml") {
-		processYamlFile(filename)
+		processYamlFile(filename, *camelSplit)
 	} else {
 		fmt.Println("Unsupported file format. Please provide a .properties or .yml file.")
 		os.Exit(1)
 	}
 }
 
-func processPropertiesFile(filename string) {
+func convertKey(key string, camelSplit bool) string {
+	if camelSplit {
+		re := regexp.MustCompile("([a-z0-9])([A-Z])")
+		key = re.ReplaceAllString(key, "${1}_${2}")
+	}
+	key = strings.ReplaceAll(key, ".", "_")
+	key = strings.ReplaceAll(key, "-", "_")
+	key = strings.ToUpper(key)
+	return key
+}
+
+func processPropertiesFile(filename string, camelSplit bool) {
 	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println(err)
@@ -63,12 +80,7 @@ func processPropertiesFile(filename string) {
 			key := split[0]
 			value := split[1]
 
-			// Convert key to uppercase with underscores
-			re := regexp.MustCompile("([a-z0-9])([A-Z])")
-			key = re.ReplaceAllString(key, "${1}_${2}")
-			key = strings.ReplaceAll(key, ".", "_")
-			key = strings.ReplaceAll(key, "-", "_")
-			key = strings.ToUpper(key)
+			key = convertKey(key, camelSplit)
 
 			// Add to jinja template
 			jinjaTemplate += fmt.Sprintf("%s={{ %s }}\n", split[0], key)
@@ -113,7 +125,7 @@ func processPropertiesFile(filename string) {
 	}
 }
 
-func processYamlFile(filename string) {
+func processYamlFile(filename string, camelSplit bool) {
 	file, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Println(err)
@@ -128,7 +140,7 @@ func processYamlFile(filename string) {
 	}
 
 	envTemplate := ""
-	flattenYaml("", yamlData, &envTemplate)
+	flattenYaml("", yamlData, &envTemplate, camelSplit)
 
 	// Write env template to file
 	err = ioutil.WriteFile(strings.ReplaceAll(filename, ".yml", ".yml.env"), []byte(envTemplate), 0644)
@@ -138,16 +150,13 @@ func processYamlFile(filename string) {
 	}
 }
 
-func flattenYaml(prefix string, data map[string]interface{}, envTemplate *string) {
+func flattenYaml(prefix string, data map[string]interface{}, envTemplate *string, camelSplit bool) {
 	for key, value := range data {
-		// Convert key to uppercase with underscores
-		re := regexp.MustCompile("([a-z0-9])([A-Z])")
-		upperKey := re.ReplaceAllString(key, "${1}_${2}") // Add underscores before uppercase letters
-		upperKey = strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(prefix+upperKey, ".", "_"), "-", "_"))
+		upperKey := convertKey(prefix+key, camelSplit)
 
 		switch v := value.(type) {
 		case map[string]interface{}:
-			flattenYaml(upperKey+"_", v, envTemplate)
+			flattenYaml(upperKey+"_", v, envTemplate, camelSplit)
 		default:
 			*envTemplate += fmt.Sprintf("%s=%v\n", upperKey, v)
 		}
